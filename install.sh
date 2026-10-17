@@ -373,7 +373,10 @@ systemctl restart nginx
 if [ "$SSL_ENABLED" = true ]; then
     echo -e "${BLUE}--> Requesting SSL Certificate from Let's Encrypt...${NC}"
     apt install -y certbot python3-certbot-nginx
-    certbot --nginx -d "${FQDN}" --non-interactive --agree-tos -m "${ADMIN_EMAIL}"
+    certbot --nginx -d "${FQDN}" --non-interactive --agree-tos -m "${ADMIN_EMAIL}" || {
+        echo -e "${YELLOW}[NOTE] Certbot failed, which is normal when using Cloudflare Tunnel or Proxy.${NC}"
+        echo -e "${YELLOW}Cloudflare handles SSL/HTTPS automatically on its edge.${NC}"
+    }
     systemctl restart nginx
 fi
 
