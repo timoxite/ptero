@@ -183,7 +183,42 @@ echo -e "${BLUE}--> [6/8] Installing composer packages and compiling Blue Theme.
 
 # Setup Environment early so composer hooks don't complain about encryption key
 if [ ! -f .env ]; then
-    cp .env.example .env
+    if [ -f .env.example ]; then
+        cp .env.example .env
+    else
+        cat << 'EOF' > .env
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=
+APP_THEME=pterodactyl
+APP_TIMEZONE=UTC
+APP_URL=http://localhost
+APP_LOCALE=en
+APP_ENVIRONMENT_ONLY=true
+
+LOG_CHANNEL=daily
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=panel
+DB_USERNAME=pterodactyl
+DB_PASSWORD=
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+CACHE_DRIVER=file
+QUEUE_CONNECTION=database
+SESSION_DRIVER=file
+
+HASHIDS_SALT=
+HASHIDS_LENGTH=8
+EOF
+    fi
 fi
 
 # Ensure assets directory exists for yarn clean & build
