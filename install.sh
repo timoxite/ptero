@@ -107,10 +107,11 @@ if [[ -f "$SCRIPT_DIR/artisan" && -f "$SCRIPT_DIR/composer.json" ]]; then
     IS_LOCAL_SOURCE=true
 fi
 
-GIT_REPO_URL=""
+GIT_REPO_URL="https://github.com/timoxite/ptero.git"
 if [[ "$IS_LOCAL_SOURCE" = false && ! -f "/tmp/panel_source.zip" ]]; then
     echo -e "\n${CYAN}You are running the installer remotely.${NC}"
-    read -rp "Enter Git Repo URL of your modified panel (or press ENTER if already extracted to /var/www/pterodactyl): " GIT_REPO_URL
+    read -rp "Enter Git Repo URL [Default: $GIT_REPO_URL]: " INPUT_REPO_URL
+    GIT_REPO_URL=${INPUT_REPO_URL:-$GIT_REPO_URL}
 fi
 
 echo -e "\n${GREEN}[INFO] Starting installation... Please wait, this may take 3-5 minutes.${NC}\n"
