@@ -21,7 +21,7 @@ const RightNavigation = styled.div`
 
         &:active,
         &:hover {
-            ${tw`text-neutral-100 bg-neutral-800/80`};
+            ${tw`text-neutral-100 bg-neutral-800`};
         }
 
         &:active,
@@ -46,7 +46,7 @@ export default () => {
     };
 
     return (
-        <div className={'w-full bg-neutral-900/95 backdrop-blur-md border-b border-cyan-500/20 shadow-lg shadow-cyan-950/30 overflow-x-auto'}>
+        <div className={'w-full bg-neutral-900 border-b border-neutral-700 shadow-lg overflow-x-auto'}>
             <SpinnerOverlay visible={isLoggingOut} />
             <div className={'mx-auto w-full flex items-center h-[3.5rem] max-w-[1200px]'}>
                 <div id={'logo'} className={'flex-1'}>
