@@ -180,18 +180,23 @@ cd /var/www/pterodactyl
 
 # Step 6: Install Dependencies & Build Frontend
 echo -e "${BLUE}--> [6/8] Installing composer packages and compiling Blue Theme...${NC}"
-composer install --no-dev --optimize-autoloader --no-interaction
 
-# Build the custom blue theme
-yarn install --production=false
-yarn run build:production
-
-# Setup Environment
+# Setup Environment early so composer hooks don't complain about encryption key
 if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
+# Ensure assets directory exists for yarn clean & build
+mkdir -p public/assets
+
+export COMPOSER_ALLOW_SUPERUSER=1
+composer install --no-dev --optimize-autoloader --no-interaction
+
 php artisan key:generate --force --no-interaction
+
+# Build the custom blue theme
+yarn install --production=false
+yarn run build:production
 
 # Configure environment settings non-interactively
 PROTOCOL="http"
