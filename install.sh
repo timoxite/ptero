@@ -178,6 +178,16 @@ fi
 
 cd /var/www/pterodactyl
 
+# Ensure all Laravel required storage and cache directories exist with permissions
+mkdir -p storage/framework/cache/data
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/logs
+mkdir -p storage/app/public
+mkdir -p bootstrap/cache
+mkdir -p public/assets
+chmod -R 777 storage bootstrap/cache
+
 # Step 6: Install Dependencies & Build Frontend
 echo -e "${BLUE}--> [6/8] Installing composer packages and compiling Blue Theme...${NC}"
 
