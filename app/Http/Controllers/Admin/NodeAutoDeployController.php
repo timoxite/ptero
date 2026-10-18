@@ -45,9 +45,21 @@ class NodeAutoDeployController extends Controller
             ], ['r_nodes' => 3]);
         }
 
+        try {
+            $token = $this->encrypter->decrypt($key->token);
+        } catch (\Throwable) {
+            $key->delete();
+            $key = $this->keyCreationService->setKeyType(ApiKey::TYPE_APPLICATION)->handle([
+                'user_id' => $request->user()->id,
+                'memo' => 'Automatically generated node deployment key.',
+                'allowed_ips' => [],
+            ], ['r_nodes' => 3]);
+            $token = $this->encrypter->decrypt($key->token);
+        }
+
         return new JsonResponse([
             'node' => $node->id,
-            'token' => $key->identifier . $this->encrypter->decrypt($key->token),
+            'token' => $key->identifier . $token,
         ]);
     }
 }

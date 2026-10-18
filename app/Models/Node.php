@@ -145,7 +145,7 @@ class Node extends Model implements Identifiable
             'debug' => false,
             'uuid' => $this->uuid,
             'token_id' => $this->daemon_token_id,
-            'token' => Container::getInstance()->make(Encrypter::class)->decrypt($this->daemon_token),
+            'token' => $this->getDecryptedKey(),
             'api' => [
                 'host' => '0.0.0.0',
                 'port' => $this->daemonListen,
@@ -193,7 +193,18 @@ class Node extends Model implements Identifiable
                 $this->daemon_token
             );
         } catch (\Throwable) {
-            return '';
+            $newToken = Str::random(self::DAEMON_TOKEN_LENGTH);
+            try {
+                $this->daemon_token = Container::getInstance()->make(Encrypter::class)->encrypt($newToken);
+                if (empty($this->daemon_token_id)) {
+                    $this->daemon_token_id = Str::random(self::DAEMON_TOKEN_ID_LENGTH);
+                }
+                $this->saveQuietly();
+            } catch (\Throwable) {
+                // Ignore save errors if database connection is read-only
+            }
+
+            return $newToken;
         }
     }
 
