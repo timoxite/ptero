@@ -164,6 +164,7 @@ apt install -y php8.3 php8.3-{cli,gd,mysql,pdo,mbstring,tokenizer,bcmath,xml,fpm
 
 systemctl enable --now mariadb
 systemctl enable --now nginx
+systemctl enable --now php8.3-fpm
 
 # Step 2: Install Composer
 echo -e "${BLUE}--> [2/${TOTAL_STEPS}] Installing Composer...${NC}"
@@ -422,7 +423,8 @@ server {
         fastcgi_buffers 4 16k;
         fastcgi_connect_timeout 300;
         fastcgi_send_timeout 300;
-        fastcgi_read_timeout 300;
+        fastcgi_param HTTPS \$fastcgi_https_param;
+        fastcgi_param HTTP_X_FORWARDED_PROTO \$scheme;
     }
 
     location ~ /\.ht {
@@ -430,6 +432,9 @@ server {
     }
 }
 EOF
+
+# Determine https param
+sed -i 's/\$fastcgi_https_param/'"${PROTOCOL_HTTPS_VAL:-'on'}"'/g' /etc/nginx/sites-available/pterodactyl.conf
 
 rm -f /etc/nginx/sites-enabled/default
 rm -f /etc/nginx/sites-enabled/pterodactyl.conf
@@ -442,7 +447,7 @@ systemctl restart nginx
 if [ "$SSL_ENABLED" = true ]; then
     echo -e "${BLUE}--> Requesting SSL Certificate from Let's Encrypt...${NC}"
     apt install -y certbot python3-certbot-nginx
-    certbot --nginx -d "${FQDN}" --non-interactive --agree-tos -m "${ADMIN_EMAIL}" || {
+    certbot --nginx --no-redirect -d "${FQDN}" --non-interactive --agree-tos -m "${ADMIN_EMAIL}" || {
         echo -e "${YELLOW}[NOTE] Certbot failed, which is normal when using Cloudflare Tunnel or Proxy.${NC}"
         echo -e "${YELLOW}Cloudflare handles SSL/HTTPS automatically on its edge.${NC}"
     }
