@@ -34,13 +34,13 @@ const GlowAccent = styled.div<{ $status?: ServerPowerState | string }>`
     left: 0;
     right: 0;
     height: 3px;
-    background: ${({ $status }) => {
+    background: ${({ $status }: { $status?: ServerPowerState | string }) => {
         if ($status === 'running') return 'linear-gradient(90deg, #10b981, #38bdf8)';
         if ($status === 'starting') return 'linear-gradient(90deg, #f59e0b, #eab308)';
         if ($status === 'stopping') return 'linear-gradient(90deg, #ef4444, #f59e0b)';
         return 'linear-gradient(90deg, rgba(100, 116, 139, 0.4), rgba(71, 85, 105, 0.4))';
     }};
-    box-shadow: ${({ $status }) =>
+    box-shadow: ${({ $status }: { $status?: ServerPowerState | string }) =>
         $status === 'running'
             ? '0 0 12px rgba(16, 185, 129, 0.6)'
             : $status === 'starting'

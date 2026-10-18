@@ -32,14 +32,16 @@ const Container = styled.div`
     `};
 `;
 
-export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => {
+export default forwardRef<HTMLFormElement, Props>(({ title, ...props }: Props, ref: any) => {
     const siteName = useStoreState((state: ApplicationStore) => state.settings.data?.name);
     const name = !siteName || siteName.toLowerCase() === 'pterodactyl' ? 'Timo X Panel' : siteName;
 
     return (
         <Container>
             {title && <h2 css={tw`text-3xl text-center text-neutral-100 font-medium py-4`}>{title}</h2>}
-            <FlashMessageRender css={tw`mb-2 px-1`} />
+            <div css={tw`mb-2 px-1`}>
+                <FlashMessageRender />
+            </div>
             <Form {...props} ref={ref}>
                 <div
                     css={tw`md:flex w-full rounded-2xl p-6 md:p-8 mx-1`}
