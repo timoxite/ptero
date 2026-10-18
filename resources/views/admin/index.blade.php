@@ -132,7 +132,7 @@
                         <i class="fa fa-check-circle" style="color: #10b981; font-size: 24px;"></i>
                         <div>
                             <strong style="color: #a7f3d0; font-size: 14px;">Your system is fully up-to-date!</strong>
-                            <p style="margin: 0; color: #94a3b8; font-size: 12px;">Running Pterodactyl Panel release <code>{{ config('app.version') }}</code>.</p>
+                            <p style="margin: 0; color: #94a3b8; font-size: 12px;">Running Timox Panel release <code>{{ config('app.version') }}</code>.</p>
                         </div>
                     </div>
                 @else
@@ -187,7 +187,7 @@
                     <i class="fa fa-fw fa-github" style="margin-right: 8px;"></i> GitHub Open Source Repository
                 </a>
                 <a href="{{ $version->getDonations() }}" target="_blank" class="btn btn-success" style="text-align: left; padding: 12px 16px;">
-                    <i class="fa fa-fw fa-heart" style="margin-right: 8px;"></i> Support Pterodactyl Development
+                    <i class="fa fa-fw fa-heart" style="margin-right: 8px;"></i> Support Timox Panel Development
                 </a>
             </div>
         </div>

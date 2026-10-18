@@ -13,7 +13,7 @@ export interface PageContentBlockProps {
 
 const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey, className, children }) => {
     const siteName = useStoreState((state: any) => state.settings?.data?.name);
-    const name = !siteName || siteName.toLowerCase() === 'pterodactyl' ? 'Timo X Panel' : siteName;
+    const name = !siteName || siteName.toLowerCase().includes('pterodactyl') || siteName.toLowerCase() === 'timo x panel' ? 'Timox Panel' : siteName;
 
     useEffect(() => {
         if (title) {
@@ -31,12 +31,10 @@ const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey
                 <ContentContainer css={tw`mb-4`}>
                     <p css={tw`text-center text-neutral-500 text-xs`}>
                         <a
-                            rel={'noopener nofollow noreferrer'}
-                            href={'https://pterodactyl.io'}
-                            target={'_blank'}
+                            href={'/'}
                             css={tw`no-underline text-neutral-500 hover:text-neutral-300`}
                         >
-                            Pterodactyl&reg;
+                            Timox Panel
                         </a>
                         &nbsp;&copy; 2015 - {new Date().getFullYear()}
                     </p>

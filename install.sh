@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# Pterodactyl Custom Blue Theme Auto-Installer
+# Timox Panel Auto-Installer
 # Supported OS: Ubuntu 20.04 / 22.04 / 24.04, Debian 11 / 12
 # ==============================================================================
 
@@ -19,13 +19,13 @@ NC='\033[0m' # No Color
 clear
 
 echo -e "${CYAN}${BOLD}"
-echo "  ██████╗ ████████╗███████╗██████╗  ██████╗ "
-echo "  ██╔══██╗╚══██╔══╝██╔════╝██╔══██╗██╔═══██╗"
-echo "  ██████╔╝   ██║   █████╗  ██████╔╝██║   ██║"
-echo "  ██╔═══╝    ██║   ██╔══╝  ██╔══██╗██║   ██║"
-echo "  ██║        ██║   ███████╗██║  ██║╚██████╔╝"
-echo "  ╚═╝        ╚═╝   ╚══════╝╚═╝  ╚═╝ ╚═════╝ "
-echo "   Custom Blue Animated Theme Auto-Installer"
+echo "  ████████╗██╗███╗   ███╗ ██████╗ ██╗  ██╗"
+echo "  ╚══██╔══╝██║████╗ ████║██╔═══██╗╚██╗██╔╝"
+echo "     ██║   ██║██╔████╔██║██║   ██║ ╚███╔╝ "
+echo "     ██║   ██║██║╚██╔╝██║██║   ██║ ██╔██╗ "
+echo "     ██║   ██║██║ ╚═╝ ██║╚██████╔╝██╔╝ ██╗"
+echo "     ╚═╝   ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝"
+echo "        Timox Panel Next-Gen Auto-Installer"
 echo -e "${NC}\n"
 
 # Check root privileges
@@ -197,7 +197,7 @@ if [ ! -f .env ]; then
         cp .env.example .env
     else
         cat << 'EOF' > .env
-APP_NAME="Timo X Panel"
+APP_NAME="Timox Panel"
 APP_ENV=production
 APP_DEBUG=false
 APP_KEY=
@@ -383,7 +383,7 @@ fi
 
 # Final Summary
 echo -e "\n${GREEN}${BOLD}================================================================${NC}"
-echo -e "${GREEN}${BOLD}   PTERODACTYL PANEL INSTALLED SUCCESSFULLY! (BLUE THEME)       ${NC}"
+echo -e "${GREEN}${BOLD}        TIMOX PANEL INSTALLED SUCCESSFULLY!                     ${NC}"
 echo -e "${GREEN}${BOLD}================================================================${NC}"
 echo -e " Panel URL:      ${CYAN}${PROTOCOL}://${FQDN}${NC}"
 echo -e " Admin Username: ${YELLOW}${ADMIN_USER}${NC}"
