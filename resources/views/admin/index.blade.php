@@ -178,7 +178,7 @@
             </div>
             <div class="box-body" style="display: flex; flex-direction: column; gap: 10px;">
                 <a href="{{ $version->getDiscord() }}" target="_blank" class="btn btn-warning" style="text-align: left; padding: 12px 16px;">
-                    <i class="fa fa-fw fa-comments" style="margin-right: 8px;"></i> Join Official Discord Community
+                    <i class="fa fa-fw fa-comments" style="margin-right: 8px;"></i> Join Timo X Discord Community
                 </a>
                 <a href="https://pterodactyl.io" target="_blank" class="btn btn-primary" style="text-align: left; padding: 12px 16px;">
                     <i class="fa fa-fw fa-book" style="margin-right: 8px;"></i> Official Documentation &amp; Guides

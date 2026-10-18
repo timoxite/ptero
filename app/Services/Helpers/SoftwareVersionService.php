@@ -45,7 +45,7 @@ class SoftwareVersionService
      */
     public function getDiscord(): string
     {
-        return Arr::get(self::$result, 'discord') ?? 'https://pterodactyl.io/discord';
+        return 'https://discord.gg/pnn9X5DyJ8';
     }
 
     /**
