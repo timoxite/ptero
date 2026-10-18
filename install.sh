@@ -320,16 +320,26 @@ echo -e "${BLUE}--> Running database migrations...${NC}"
 php artisan migrate --seed --force --no-interaction
 php artisan tinker --execute="DB::table('settings')->updateOrInsert(['key' => 'settings::app:name'], ['value' => 'Timo X Panel']);" 2>/dev/null || true
 
-# Create Admin User
+# Create Admin User (or update if user already exists)
 echo -e "${BLUE}--> Creating Admin Account...${NC}"
-php artisan p:user:make \
+if ! php artisan p:user:make \
     --email="${ADMIN_EMAIL}" \
     --username="${ADMIN_USER}" \
     --name-first="${ADMIN_FIRSTNAME}" \
     --name-last="${ADMIN_LASTNAME}" \
     --password="${ADMIN_PASSWORD}" \
     --admin=1 \
-    --no-interaction
+    --no-interaction; then
+    echo -e "${YELLOW}[NOTE] Admin user with email/username already exists. Updating existing user's password and admin privileges...${NC}"
+    php artisan tinker --execute="
+        \$user = \Pterodactyl\Models\User::where('email', '${ADMIN_EMAIL}')->orWhere('username', '${ADMIN_USER}')->first();
+        if (\$user) {
+            \$user->password = \Illuminate\Support\Facades\Hash::make('${ADMIN_PASSWORD}');
+            \$user->root_admin = true;
+            \$user->save();
+        }
+    " 2>/dev/null || true
+fi
 
 # Permissions
 chown -R www-data:www-data /var/www/pterodactyl/*
