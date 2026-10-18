@@ -5,6 +5,10 @@ namespace Pterodactyl\Http\Controllers\Admin;
 use Illuminate\View\View;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\Helpers\SoftwareVersionService;
+use Pterodactyl\Models\Server;
+use Pterodactyl\Models\Node;
+use Pterodactyl\Models\User;
+use Pterodactyl\Models\Database;
 
 class BaseController extends Controller
 {
@@ -20,6 +24,12 @@ class BaseController extends Controller
      */
     public function index(): View
     {
-        return view('admin.index', ['version' => $this->version]);
+        return view('admin.index', [
+            'version' => $this->version,
+            'serversCount' => Server::count(),
+            'nodesCount' => Node::count(),
+            'usersCount' => User::count(),
+            'databasesCount' => Database::count(),
+        ]);
     }
 }

@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEthernet, faHdd, faMemory, faMicrochip, faServer, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEthernet, faHdd, faMemory, faMicrochip, faServer, faExternalLinkAlt, faCopy } from '@fortawesome/free-solid-svg-icons';
+import copy from 'copy-to-clipboard';
 import { Link } from 'react-router-dom';
 import { Server } from '@/api/server/getServer';
 import getServerResourceUsage, { ServerPowerState, ServerStats } from '@/api/server/getServerResourceUsage';
@@ -53,6 +54,15 @@ export default ({ server, className }: { server: Server; className?: string }) =
     const interval = useRef<Timer>(null) as React.MutableRefObject<Timer>;
     const [isSuspended, setIsSuspended] = useState(server.status === 'suspended');
     const [stats, setStats] = useState<ServerStats | null>(null);
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCopyIp = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        copy(defaultAllocation);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
 
     const getStats = () =>
         getServerResourceUsage(server.uuid)
@@ -203,16 +213,20 @@ export default ({ server, className }: { server: Server; className?: string }) =
                     <p className={'text-xs text-neutral-400 line-clamp-1 mb-2'}>{server.description}</p>
                 )}
 
-                {/* Connection Tag */}
+                {/* Interactive Click-to-Copy Connection Tag */}
                 <div
-                    className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono text-neutral-300'}
+                    onClick={handleCopyIp}
+                    title={'Click to copy address to clipboard'}
+                    className={'inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-mono cursor-pointer transition-all duration-200'}
                     style={{
-                        background: 'rgba(15, 23, 42, 0.7)',
-                        border: '1px solid rgba(56, 189, 248, 0.15)',
+                        background: isCopied ? 'rgba(16, 185, 129, 0.2)' : 'rgba(15, 23, 42, 0.85)',
+                        border: isCopied ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(56, 189, 248, 0.2)',
+                        color: isCopied ? '#34d399' : '#cbd5e1',
+                        boxShadow: isCopied ? '0 0 10px rgba(16, 185, 129, 0.35)' : 'none',
                     }}
                 >
-                    <FontAwesomeIcon icon={faEthernet} className={'text-cyan-400 text-xs'} />
-                    <span>{defaultAllocation}</span>
+                    <FontAwesomeIcon icon={isCopied ? faCopy : faEthernet} className={isCopied ? 'text-emerald-400 text-xs' : 'text-cyan-400 text-xs'} />
+                    <span>{isCopied ? 'Copied to clipboard!' : defaultAllocation}</span>
                 </div>
             </div>
 
