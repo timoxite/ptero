@@ -87,7 +87,10 @@ done
 DEFAULT_DB_PASS=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 24)
 read -srp "Enter MySQL Database Password [Press ENTER to auto-generate]: " DB_PASSWORD
 echo ""
-DB_PASSWORD=${DB_PASSWORD:-$DEFAULT_DB_PASS}
+if [[ -z "$DB_PASSWORD" ]]; then
+    DB_PASSWORD="$DEFAULT_DB_PASS"
+    echo -e "${GREEN}[INFO] Auto-generated Database Password: ${YELLOW}${DB_PASSWORD}${NC}"
+fi
 
 # SSL option
 SSL_ENABLED=false
@@ -169,11 +172,30 @@ npm install -g yarn
 
 # Step 4: Configure Database
 echo -e "${BLUE}--> [4/${TOTAL_STEPS}] Configuring MariaDB database...${NC}"
-mysql -u root <<EOF
-CREATE DATABASE IF NOT EXISTS panel;
-CREATE USER IF NOT EXISTS 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
-ALTER USER 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
+
+# Safely escape backslashes and single quotes for SQL string
+SAFE_DB_PASS=$(printf '%s' "$DB_PASSWORD" | sed -e "s/\\\\/\\\\\\\\/g" -e "s/'/\\\\'/g")
+
+DB_CLI="mysql"
+if command -v mariadb &> /dev/null; then
+    DB_CLI="mariadb"
+fi
+
+$DB_CLI -u root <<EOF
+CREATE DATABASE IF NOT EXISTS panel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '${SAFE_DB_PASS}';
+ALTER USER 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '${SAFE_DB_PASS}';
 GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'127.0.0.1' WITH GRANT OPTION;
+
+CREATE USER IF NOT EXISTS 'pterodactyl'@'localhost' IDENTIFIED BY '${SAFE_DB_PASS}';
+ALTER USER 'pterodactyl'@'localhost' IDENTIFIED BY '${SAFE_DB_PASS}';
+GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'localhost' WITH GRANT OPTION;
+
+CREATE USER IF NOT EXISTS 'pterodactyl'@'%' IDENTIFIED BY '${SAFE_DB_PASS}';
+ALTER USER 'pterodactyl'@'%' IDENTIFIED BY '${SAFE_DB_PASS}';
+GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'%' WITH GRANT OPTION;
+
 FLUSH PRIVILEGES;
 EOF
 
@@ -275,13 +297,23 @@ php artisan p:environment:setup \
     --telemetry=false \
     --no-interaction
 
-php artisan p:environment:database \
+# Configure database connection
+if ! php artisan p:environment:database \
     --host="127.0.0.1" \
     --port="3306" \
     --database="panel" \
     --username="pterodactyl" \
     --password="${DB_PASSWORD}" \
-    --no-interaction
+    --no-interaction; then
+    echo -e "${YELLOW}[NOTE] Retrying database connection with host 'localhost'...${NC}"
+    php artisan p:environment:database \
+        --host="localhost" \
+        --port="3306" \
+        --database="panel" \
+        --username="pterodactyl" \
+        --password="${DB_PASSWORD}" \
+        --no-interaction
+fi
 
 # Run migrations
 echo -e "${BLUE}--> Running database migrations...${NC}"
