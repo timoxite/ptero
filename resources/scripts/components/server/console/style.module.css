@@ -1,5 +1,5 @@
 .stat_block {
-    @apply flex items-center rounded shadow-lg relative;
+    @apply flex items-center rounded-2xl relative;
     @apply col-span-3 md:col-span-2 lg:col-span-6;
     @apply px-3 py-2 md:p-3 lg:p-4;
 
@@ -8,7 +8,7 @@
     }
 
     & > .icon {
-        @apply hidden flex-shrink-0 items-center justify-center rounded-lg shadow-md w-12 h-12;
+        @apply hidden flex-shrink-0 items-center justify-center rounded-xl shadow-md w-12 h-12;
         @apply transition-colors duration-500;
         @apply sm:flex sm:mr-4;
 
@@ -21,43 +21,28 @@
 .terminal {
     @apply flex flex-col w-full;
 
-    & .overflows_container {
-        @apply -ml-4 sm:ml-0;
-        width: calc(100% + 2rem);
+    & #terminal {
+        @apply h-full;
 
-        @screen sm {
-            @apply w-full;
+        &::-webkit-scrollbar {
+            width: 6px;
         }
-    }
 
-    & > .container {
-        @apply rounded-t p-1 sm:p-2 bg-black min-h-[16rem] flex-1 font-mono text-sm;
-
-        & #terminal {
-            @apply h-full;
-
-            &::-webkit-scrollbar-track {
-                @apply w-2;
-            }
-
-            &::-webkit-scrollbar-thumb {
-                @apply bg-gray-900;
-            }
+        &::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
         }
-    }
 
-    & .command_icon {
-        @apply flex items-center top-0 left-0 absolute z-10 select-none h-full px-3 transition-colors duration-100;
-    }
+        &::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.25);
+            border-radius: 4px;
+        }
 
-    & .command_input {
-        @apply relative bg-gray-900 px-2 text-gray-100 pl-10 pr-4 py-2 w-full font-mono text-sm sm:rounded-b;
-        @apply focus:ring-0 outline-none focus-visible:outline-none;
-        @apply border-0 border-b-2 border-transparent transition-colors duration-100;
-        @apply active:border-cyan-500 focus:border-cyan-500;
+        &::-webkit-scrollbar-thumb:hover {
+            background: rgba(56, 189, 248, 0.45);
+        }
     }
 }
 
 .chart_container {
-    @apply bg-gray-600 rounded shadow-lg pt-2 border-b-4 border-gray-700 relative;
+    @apply rounded-2xl shadow-xl relative;
 }

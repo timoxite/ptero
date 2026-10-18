@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/elements/button/index';
 import Can from '@/components/elements/Can';
 import { ServerContext } from '@/state/server';
 import { PowerAction } from '@/components/server/console/ServerConsoleContainer';
 import { Dialog } from '@/components/elements/dialog';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlay, faStop, faSyncAlt, faSkull } from '@fortawesome/free-solid-svg-icons';
 
 interface PowerButtonProps {
     className?: string;
@@ -49,27 +50,51 @@ export default ({ className }: PowerButtonProps) => {
                 Forcibly stopping a server can lead to data corruption.
             </Dialog.Confirm>
             <Can action={'control.start'}>
-                <Button
-                    className={'flex-1'}
+                <button
+                    type={'button'}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs md:text-sm tracking-wide transition-all duration-300 ${
+                        status !== 'offline'
+                            ? 'opacity-40 cursor-not-allowed bg-slate-800/80 text-slate-500 border border-slate-700/40'
+                            : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:shadow-[0_0_28px_rgba(16,185,129,0.6)] hover:scale-[1.02] active:scale-[0.98]'
+                    }`}
                     disabled={status !== 'offline'}
                     onClick={onButtonClick.bind(this, 'start')}
                 >
-                    Start
-                </Button>
+                    <FontAwesomeIcon icon={faPlay} className={'text-xs'} />
+                    <span>Start</span>
+                </button>
             </Can>
             <Can action={'control.restart'}>
-                <Button.Text className={'flex-1'} disabled={!status} onClick={onButtonClick.bind(this, 'restart')}>
-                    Restart
-                </Button.Text>
+                <button
+                    type={'button'}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs md:text-sm tracking-wide transition-all duration-300 ${
+                        !status
+                            ? 'opacity-40 cursor-not-allowed bg-slate-800/80 text-slate-500 border border-slate-700/40'
+                            : 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(14,165,233,0.35)] hover:shadow-[0_0_28px_rgba(14,165,233,0.6)] hover:scale-[1.02] active:scale-[0.98]'
+                    }`}
+                    disabled={!status}
+                    onClick={onButtonClick.bind(this, 'restart')}
+                >
+                    <FontAwesomeIcon icon={faSyncAlt} className={'text-xs'} />
+                    <span>Restart</span>
+                </button>
             </Can>
             <Can action={'control.stop'}>
-                <Button.Danger
-                    className={'flex-1'}
+                <button
+                    type={'button'}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs md:text-sm tracking-wide transition-all duration-300 ${
+                        status === 'offline'
+                            ? 'opacity-40 cursor-not-allowed bg-slate-800/80 text-slate-500 border border-slate-700/40'
+                            : killable
+                            ? 'bg-gradient-to-r from-amber-600 to-red-700 hover:from-amber-500 hover:to-red-600 text-white shadow-[0_0_24px_rgba(239,68,68,0.5)] animate-pulse'
+                            : 'bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white shadow-[0_0_20px_rgba(244,63,94,0.35)] hover:shadow-[0_0_28px_rgba(244,63,94,0.6)] hover:scale-[1.02] active:scale-[0.98]'
+                    }`}
                     disabled={status === 'offline'}
                     onClick={onButtonClick.bind(this, killable ? 'kill' : 'stop')}
                 >
-                    {killable ? 'Kill' : 'Stop'}
-                </Button.Danger>
+                    <FontAwesomeIcon icon={killable ? faSkull : faStop} className={'text-xs'} />
+                    <span>{killable ? 'Kill' : 'Stop'}</span>
+                </button>
             </Can>
         </div>
     );

@@ -19,24 +19,11 @@ import { capitalize } from '@/lib/strings';
 
 type Stats = Record<'memory' | 'cpu' | 'disk' | 'uptime' | 'rx' | 'tx', number>;
 
-const getBackgroundColor = (value: number, max: number | null): string | undefined => {
-    const delta = !max ? 0 : value / max;
-
-    if (delta > 0.8) {
-        if (delta > 0.9) {
-            return 'bg-red-500';
-        }
-        return 'bg-yellow-500';
-    }
-
-    return undefined;
-};
-
 const Limit = ({ limit, children }: { limit: string | null; children: React.ReactNode }) => (
-    <>
-        {children}
-        <span className={'ml-1 text-gray-300 text-[70%] select-none'}>/ {limit || <>&infin;</>}</span>
-    </>
+    <div className={'flex items-baseline truncate'}>
+        <span className={'truncate'}>{children}</span>
+        <span className={'ml-1.5 text-neutral-400 font-normal text-xs select-none'}>/ {limit || <>&infin;</>}</span>
+    </div>
 );
 
 const ServerDetailsBlock = ({ className }: { className?: string }) => {
@@ -56,9 +43,23 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
         [limits]
     );
 
+    const cpuPercent = useMemo(() => {
+        if (!limits?.cpu || status === 'offline') return null;
+        return Math.min(100, (stats.cpu / limits.cpu) * 100);
+    }, [stats.cpu, limits?.cpu, status]);
+
+    const memoryPercent = useMemo(() => {
+        if (!limits?.memory || status === 'offline') return null;
+        return Math.min(100, (stats.memory / mbToBytes(limits.memory)) * 100);
+    }, [stats.memory, limits?.memory, status]);
+
+    const diskPercent = useMemo(() => {
+        if (!limits?.disk) return null;
+        return Math.min(100, (stats.disk / mbToBytes(limits.disk)) * 100);
+    }, [stats.disk, limits?.disk]);
+
     const allocation = ServerContext.useStoreState((state) => {
         const match = state.server.data!.allocations.find((allocation) => allocation.isDefault);
-
         return !match ? 'n/a' : `${match.alias || ip(match.ip)}:${match.port}`;
     });
 
@@ -89,50 +90,92 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
     });
 
     return (
-        <div className={classNames('grid grid-cols-6 gap-2 md:gap-4', className)}>
-            <StatBlock icon={faWifi} title={'Address'} copyOnClick={allocation}>
-                {allocation}
+        <div className={classNames('flex flex-col gap-3', className)}>
+            <StatBlock
+                icon={faWifi}
+                title={'Address'}
+                copyOnClick={allocation}
+                gradient={'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)'}
+            >
+                <span className={'font-mono text-sm tracking-wide text-cyan-200'}>{allocation}</span>
             </StatBlock>
+
             <StatBlock
                 icon={faClock}
                 title={'Uptime'}
-                color={getBackgroundColor(status === 'running' ? 0 : status !== 'offline' ? 9 : 10, 10)}
+                gradient={'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'}
             >
-                {status === null ? (
-                    'Offline'
+                {status === null || status === 'offline' ? (
+                    <span className={'text-slate-400 font-medium'}>Offline</span>
                 ) : stats.uptime > 0 ? (
-                    <UptimeDuration uptime={stats.uptime / 1000} />
+                    <span className={'text-emerald-300 font-medium'}>
+                        <UptimeDuration uptime={stats.uptime / 1000} />
+                    </span>
                 ) : (
-                    capitalize(status)
+                    <span className={'text-amber-300 font-medium'}>{capitalize(status)}</span>
                 )}
             </StatBlock>
-            <StatBlock icon={faMicrochip} title={'CPU Load'} color={getBackgroundColor(stats.cpu, limits.cpu)}>
+
+            <StatBlock
+                icon={faMicrochip}
+                title={'CPU Load'}
+                progress={cpuPercent}
+                gradient={'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'}
+            >
                 {status === 'offline' ? (
-                    <span className={'text-gray-400'}>Offline</span>
+                    <span className={'text-slate-400 font-medium'}>Offline</span>
                 ) : (
                     <Limit limit={textLimits.cpu}>{stats.cpu.toFixed(2)}%</Limit>
                 )}
             </StatBlock>
+
             <StatBlock
                 icon={faMemory}
                 title={'Memory'}
-                color={getBackgroundColor(stats.memory / 1024, limits.memory * 1024)}
+                progress={memoryPercent}
+                gradient={'linear-gradient(135deg, #10b981 0%, #059669 100%)'}
             >
                 {status === 'offline' ? (
-                    <span className={'text-gray-400'}>Offline</span>
+                    <span className={'text-slate-400 font-medium'}>Offline</span>
                 ) : (
                     <Limit limit={textLimits.memory}>{bytesToString(stats.memory)}</Limit>
                 )}
             </StatBlock>
-            <StatBlock icon={faHdd} title={'Disk'} color={getBackgroundColor(stats.disk / 1024, limits.disk * 1024)}>
+
+            <StatBlock
+                icon={faHdd}
+                title={'Disk Storage'}
+                progress={diskPercent}
+                gradient={'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}
+            >
                 <Limit limit={textLimits.disk}>{bytesToString(stats.disk)}</Limit>
             </StatBlock>
-            <StatBlock icon={faCloudDownloadAlt} title={'Network (Inbound)'}>
-                {status === 'offline' ? <span className={'text-gray-400'}>Offline</span> : bytesToString(stats.rx)}
-            </StatBlock>
-            <StatBlock icon={faCloudUploadAlt} title={'Network (Outbound)'}>
-                {status === 'offline' ? <span className={'text-gray-400'}>Offline</span> : bytesToString(stats.tx)}
-            </StatBlock>
+
+            <div className={'grid grid-cols-2 gap-3'}>
+                <StatBlock
+                    icon={faCloudDownloadAlt}
+                    title={'Inbound'}
+                    gradient={'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)'}
+                >
+                    {status === 'offline' ? (
+                        <span className={'text-slate-400 font-medium text-xs'}>Offline</span>
+                    ) : (
+                        <span className={'text-xs font-mono'}>{bytesToString(stats.rx)}</span>
+                    )}
+                </StatBlock>
+
+                <StatBlock
+                    icon={faCloudUploadAlt}
+                    title={'Outbound'}
+                    gradient={'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)'}
+                >
+                    {status === 'offline' ? (
+                        <span className={'text-slate-400 font-medium text-xs'}>Offline</span>
+                    ) : (
+                        <span className={'text-xs font-mono'}>{bytesToString(stats.tx)}</span>
+                    )}
+                </StatBlock>
+            </div>
         </div>
     );
 };
