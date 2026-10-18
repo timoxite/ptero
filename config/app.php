@@ -23,7 +23,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Timox Panel'),
+    'name' => env('APP_NAME', 'Timo X Panel'),
 
     /*
     |--------------------------------------------------------------------------

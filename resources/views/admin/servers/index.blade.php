@@ -83,7 +83,7 @@
     <script>
         $('.console-popout').on('click', function (event) {
             event.preventDefault();
-            window.open($(this).attr('href'), 'Timox Panel Console', 'width=800,height=400');
+            window.open($(this).attr('href'), 'Timo X Panel Console', 'width=800,height=400');
         });
     </script>
 @endsection

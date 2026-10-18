@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{ config('app.name', 'Timox Panel') }}</title>
+        <title>{{ (config('app.name') && !in_array(strtolower(config('app.name')), ['pterodactyl', 'timox panel'])) ? config('app.name') : 'Timo X Panel' }}</title>
 
         @section('meta')
             <meta charset="utf-8">

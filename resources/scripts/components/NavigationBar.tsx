@@ -50,7 +50,7 @@ const RightNavigation = styled.div`
 
 export default () => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data?.name);
-    const displayName = !name || name.toLowerCase().includes('pterodactyl') || name.toLowerCase() === 'timo x panel' ? 'Timox Panel' : name;
+    const displayName = !name || name.toLowerCase() === 'pterodactyl' ? 'Timo X Panel' : name;
     const user = useStoreState((state: ApplicationStore) => state.user.data);
     const rootAdmin = user?.rootAdmin ?? false;
     const [isLoggingOut, setIsLoggingOut] = useState(false);

@@ -77,6 +77,9 @@ class SettingsServiceProvider extends ServiceProvider
 
         foreach ($this->keys as $key) {
             $value = array_get($values, 'settings::' . $key, $config->get(str_replace(':', '.', $key)));
+            if ($key === 'app:name' && (empty($value) || in_array(strtolower($value), ['pterodactyl', 'timox panel']))) {
+                $value = 'Timo X Panel';
+            }
             if (in_array($key, self::$encrypted)) {
                 try {
                     $value = $encrypter->decrypt($value);

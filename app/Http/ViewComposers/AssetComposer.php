@@ -19,9 +19,14 @@ class AssetComposer
      */
     public function compose(View $view): void
     {
+        $siteName = config('app.name');
+        if (empty($siteName) || in_array(strtolower($siteName), ['pterodactyl', 'timox panel'])) {
+            $siteName = 'Timo X Panel';
+        }
+
         $view->with('asset', $this->assetHashService);
         $view->with('siteConfiguration', [
-            'name' => config('app.name') ?? 'Timox Panel',
+            'name' => $siteName,
             'locale' => config('app.locale') ?? 'en',
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),

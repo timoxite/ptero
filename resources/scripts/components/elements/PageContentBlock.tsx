@@ -13,7 +13,7 @@ export interface PageContentBlockProps {
 
 const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey, className, children }) => {
     const siteName = useStoreState((state: any) => state.settings?.data?.name);
-    const name = !siteName || siteName.toLowerCase().includes('pterodactyl') || siteName.toLowerCase() === 'timo x panel' ? 'Timox Panel' : siteName;
+    const name = !siteName || siteName.toLowerCase() === 'pterodactyl' ? 'Timo X Panel' : siteName;
 
     useEffect(() => {
         if (title) {
@@ -30,13 +30,8 @@ const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey
                 </ContentContainer>
                 <ContentContainer css={tw`mb-4`}>
                     <p css={tw`text-center text-neutral-500 text-xs`}>
-                        <a
-                            href={'/'}
-                            css={tw`no-underline text-neutral-500 hover:text-neutral-300`}
-                        >
-                            Timox Panel
-                        </a>
-                        &nbsp;&copy; 2015 - {new Date().getFullYear()}
+                        <span css={tw`text-neutral-400 font-medium`}>{name}</span>
+                        &nbsp;&copy; {new Date().getFullYear()}
                     </p>
                 </ContentContainer>
             </>

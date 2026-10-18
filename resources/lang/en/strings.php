@@ -91,5 +91,5 @@ return [
     'enable' => 'Enable',
     'disable' => 'Disable',
     'save' => 'Save',
-    'copyright' => '&copy; 2015 - :year Timox Panel',
+    'copyright' => '&copy; 2015 - :year Timo X Panel',
 ];
