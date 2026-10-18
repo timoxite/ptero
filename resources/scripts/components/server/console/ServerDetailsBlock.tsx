@@ -90,14 +90,14 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
     });
 
     return (
-        <div className={classNames('flex flex-col gap-3', className)}>
+        <div className={classNames('flex flex-col gap-2', className)}>
             <StatBlock
                 icon={faWifi}
                 title={'Address'}
                 copyOnClick={allocation}
                 gradient={'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)'}
             >
-                <span className={'font-mono text-sm tracking-wide text-cyan-200'}>{allocation}</span>
+                <span className={'font-mono text-xs tracking-wide text-cyan-200'}>{allocation}</span>
             </StatBlock>
 
             <StatBlock
@@ -106,13 +106,13 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                 gradient={'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'}
             >
                 {status === null || status === 'offline' ? (
-                    <span className={'text-slate-400 font-medium'}>Offline</span>
+                    <span className={'text-slate-400 font-medium text-sm'}>Offline</span>
                 ) : stats.uptime > 0 ? (
-                    <span className={'text-emerald-300 font-medium'}>
+                    <span className={'text-emerald-300 font-medium text-sm'}>
                         <UptimeDuration uptime={stats.uptime / 1000} />
                     </span>
                 ) : (
-                    <span className={'text-amber-300 font-medium'}>{capitalize(status)}</span>
+                    <span className={'text-amber-300 font-medium text-sm'}>{capitalize(status)}</span>
                 )}
             </StatBlock>
 
@@ -123,7 +123,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                 gradient={'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'}
             >
                 {status === 'offline' ? (
-                    <span className={'text-slate-400 font-medium'}>Offline</span>
+                    <span className={'text-slate-400 font-medium text-sm'}>Offline</span>
                 ) : (
                     <Limit limit={textLimits.cpu}>{stats.cpu.toFixed(2)}%</Limit>
                 )}
@@ -136,7 +136,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                 gradient={'linear-gradient(135deg, #10b981 0%, #059669 100%)'}
             >
                 {status === 'offline' ? (
-                    <span className={'text-slate-400 font-medium'}>Offline</span>
+                    <span className={'text-slate-400 font-medium text-sm'}>Offline</span>
                 ) : (
                     <Limit limit={textLimits.memory}>{bytesToString(stats.memory)}</Limit>
                 )}
@@ -151,7 +151,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                 <Limit limit={textLimits.disk}>{bytesToString(stats.disk)}</Limit>
             </StatBlock>
 
-            <div className={'grid grid-cols-2 gap-3'}>
+            <div className={'grid grid-cols-2 gap-2'}>
                 <StatBlock
                     icon={faCloudDownloadAlt}
                     title={'Inbound'}
