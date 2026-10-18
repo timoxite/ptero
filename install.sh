@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# Pterodactyl Custom Blue Theme Auto-Installer
+# Timo X Panel & Wings Auto-Installer
 # Supported OS: Ubuntu 20.04 / 22.04 / 24.04, Debian 11 / 12
 # ==============================================================================
 
@@ -19,13 +19,13 @@ NC='\033[0m' # No Color
 clear
 
 echo -e "${CYAN}${BOLD}"
-echo "  ██████╗ ████████╗███████╗██████╗  ██████╗ "
-echo "  ██╔══██╗╚══██╔══╝██╔════╝██╔══██╗██╔═══██╗"
-echo "  ██████╔╝   ██║   █████╗  ██████╔╝██║   ██║"
-echo "  ██╔═══╝    ██║   ██╔══╝  ██╔══██╗██║   ██║"
-echo "  ██║        ██║   ███████╗██║  ██║╚██████╔╝"
-echo "  ╚═╝        ╚═╝   ╚══════╝╚═╝  ╚═╝ ╚═════╝ "
-echo "   Custom Blue Animated Theme Auto-Installer"
+echo "  ████████╗██╗███╗   ███╗ ██████╗     ██╗  ██╗"
+echo "  ╚══██╔══╝██║████╗ ████║██╔═══██╗    ╚██╗██╔╝"
+echo "     ██║   ██║██╔████╔██║██║   ██║     ╚███╔╝ "
+echo "     ██║   ██║██║╚██╔╝██║██║   ██║     ██╔██╗ "
+echo "     ██║   ██║██║ ╚═╝ ██║╚██████╔╝    ██╔╝ ██╗"
+echo "     ╚═╝   ╚═╝╚═╝     ╚═╝ ╚═════╝     ╚═╝  ╚═╝"
+echo "        TIMO X PANEL & WINGS AUTO-INSTALLER"
 echo -e "${NC}\n"
 
 # Check root privileges
@@ -51,14 +51,14 @@ fi
 
 echo -e "${GREEN}[INFO] Detected OS: $PRETTY_NAME${NC}"
 
-# Detect Public IP
-SERVER_IP=$(curl -s https://api.ipify.org || hostname -I | awk '{print $1}')
-
 # Collect Installation Details
-echo -e "\n${BOLD}${BLUE}=== 1. Installation Configuration ===${NC}"
+echo -e "\n${BOLD}${BLUE}=== 1. Panel Configuration ===${NC}"
 
-read -rp "Enter Domain or Server IP [Default: $SERVER_IP]: " FQDN
-FQDN=${FQDN:-$SERVER_IP}
+read -rp "Enter Domain or Server FQDN (e.g. panel.example.com): " FQDN
+while [[ -z "$FQDN" ]]; do
+    echo -e "${RED}[ERROR] Domain or IP address cannot be empty!${NC}"
+    read -rp "Enter Domain or Server FQDN (e.g. panel.example.com): " FQDN
+done
 
 read -rp "Enter Admin Email: " ADMIN_EMAIL
 while [[ -z "$ADMIN_EMAIL" ]]; do
@@ -100,6 +100,20 @@ else
     fi
 fi
 
+# Wings installation option
+echo -e "\n${BOLD}${BLUE}=== 2. Wings (Daemon) Configuration ===${NC}"
+read -rp "Do you want to install Wings on this server as well? [Y/n]: " INSTALL_WINGS
+INSTALL_WINGS=${INSTALL_WINGS:-Y}
+if [[ "$INSTALL_WINGS" =~ ^[Yy]$ ]]; then
+    WINGS_ENABLED=true
+    TOTAL_STEPS=9
+    echo -e "${GREEN}[INFO] Wings will be installed alongside Timo X Panel.${NC}"
+else
+    WINGS_ENABLED=false
+    TOTAL_STEPS=8
+    echo -e "${YELLOW}[INFO] Skipping Wings installation.${NC}"
+fi
+
 # Determine source directory of files
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IS_LOCAL_SOURCE=false
@@ -117,7 +131,7 @@ fi
 echo -e "\n${GREEN}[INFO] Starting installation... Please wait, this may take 3-5 minutes.${NC}\n"
 
 # Step 1: Install System Dependencies
-echo -e "${BLUE}--> [1/8] Installing PHP, Nginx, MariaDB, and tools...${NC}"
+echo -e "${BLUE}--> [1/${TOTAL_STEPS}] Installing PHP, Nginx, MariaDB, and tools...${NC}"
 export DEBIAN_FRONTEND=noninteractive
 
 apt update -y
@@ -140,13 +154,13 @@ systemctl enable --now mariadb
 systemctl enable --now nginx
 
 # Step 2: Install Composer
-echo -e "${BLUE}--> [2/8] Installing Composer...${NC}"
+echo -e "${BLUE}--> [2/${TOTAL_STEPS}] Installing Composer...${NC}"
 if ! command -v composer &> /dev/null; then
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 fi
 
 # Step 3: Install Node.js 22 & Yarn
-echo -e "${BLUE}--> [3/8] Installing Node.js 22 and Yarn...${NC}"
+echo -e "${BLUE}--> [3/${TOTAL_STEPS}] Installing Node.js 22 and Yarn...${NC}"
 if ! command -v node &> /dev/null || [[ $(node -v | cut -d'v' -f2 | cut -d'.' -f1) -lt 20 ]]; then
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
     apt install -y nodejs
@@ -154,7 +168,7 @@ fi
 npm install -g yarn
 
 # Step 4: Configure Database
-echo -e "${BLUE}--> [4/8] Configuring MariaDB database...${NC}"
+echo -e "${BLUE}--> [4/${TOTAL_STEPS}] Configuring MariaDB database...${NC}"
 mysql -u root <<EOF
 CREATE DATABASE IF NOT EXISTS panel;
 CREATE USER IF NOT EXISTS 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
@@ -164,7 +178,7 @@ FLUSH PRIVILEGES;
 EOF
 
 # Step 5: Place Panel Files
-echo -e "${BLUE}--> [5/8] Setting up Pterodactyl files...${NC}"
+echo -e "${BLUE}--> [5/${TOTAL_STEPS}] Setting up Timo X Panel files...${NC}"
 mkdir -p /var/www/pterodactyl
 
 if [[ "$IS_LOCAL_SOURCE" = true && "$SCRIPT_DIR" != "/var/www/pterodactyl" ]]; then
@@ -189,7 +203,7 @@ mkdir -p public/assets
 chmod -R 777 storage bootstrap/cache
 
 # Step 6: Install Dependencies & Build Frontend
-echo -e "${BLUE}--> [6/8] Installing composer packages and compiling Blue Theme...${NC}"
+echo -e "${BLUE}--> [6/${TOTAL_STEPS}] Installing composer packages and compiling Timo X Panel...${NC}"
 
 # Setup Environment early so composer hooks don't complain about encryption key
 if [ ! -f .env ]; then
@@ -240,7 +254,7 @@ composer install --no-dev --optimize-autoloader --no-interaction
 
 php artisan key:generate --force --no-interaction
 
-# Build the custom blue theme
+# Build the custom theme
 yarn install --production=false
 yarn run build:production
 
@@ -290,7 +304,7 @@ chown -R www-data:www-data /var/www/pterodactyl/*
 chmod -R 755 /var/www/pterodactyl/storage /var/www/pterodactyl/bootstrap/cache
 
 # Step 7: Setup Queue Worker & Crontab
-echo -e "${BLUE}--> [7/8] Configuring Queue Worker & Cron...${NC}"
+echo -e "${BLUE}--> [7/${TOTAL_STEPS}] Configuring Queue Worker & Cron...${NC}"
 
 cat << 'EOF' > /etc/systemd/system/pteroq.service
 [Unit]
@@ -317,7 +331,7 @@ systemctl enable --now pteroq.service
 (crontab -l -u www-data 2>/dev/null | grep -v "artisan schedule:run"; echo "* * * * * php /var/www/pterodactyl/artisan schedule:run >> /dev/null 2>&1") | crontab -u www-data -
 
 # Step 8: Configure Nginx & SSL
-echo -e "${BLUE}--> [8/8] Configuring Nginx Web Server...${NC}"
+echo -e "${BLUE}--> [8/${TOTAL_STEPS}] Configuring Nginx Web Server...${NC}"
 
 cat << EOF > /etc/nginx/sites-available/pterodactyl.conf
 server {
@@ -382,13 +396,82 @@ if [ "$SSL_ENABLED" = true ]; then
     systemctl restart nginx
 fi
 
+# Step 9: Install Docker & Wings Daemon (if selected)
+if [ "$WINGS_ENABLED" = true ]; then
+    echo -e "${BLUE}--> [9/${TOTAL_STEPS}] Installing Docker & Wings Daemon...${NC}"
+
+    # Install Docker
+    if ! command -v docker &> /dev/null; then
+        echo -e "${CYAN}--> Installing Docker...${NC}"
+        curl -sSL https://get.docker.com/ | CHANNEL=stable bash
+        systemctl enable --now docker
+    else
+        echo -e "${GREEN}--> Docker is already installed and running.${NC}"
+    fi
+
+    # Determine Architecture
+    ARCH=$(uname -m)
+    if [[ "$ARCH" == "x86_64" ]]; then
+        WINGS_ARCH="amd64"
+    elif [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+        WINGS_ARCH="arm64"
+    else
+        WINGS_ARCH="amd64"
+    fi
+
+    echo -e "${CYAN}--> Downloading Wings binary for ${WINGS_ARCH}...${NC}"
+    mkdir -p /etc/pterodactyl /var/log/pterodactyl
+    curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_${WINGS_ARCH}"
+    chmod u+x /usr/local/bin/wings
+
+    echo -e "${CYAN}--> Configuring Wings systemd service...${NC}"
+    cat << 'EOF' > /etc/systemd/system/wings.service
+[Unit]
+Description=Pterodactyl Wings Daemon
+After=docker.service
+Requires=docker.service
+PartOf=docker.service
+
+[Service]
+User=root
+WorkingDirectory=/etc/pterodactyl
+LimitNOFILE=4096
+PIDFile=/var/run/wings/daemon.pid
+ExecStart=/usr/local/bin/wings
+Restart=on-failure
+StartLimitInterval=180
+StartLimitBurst=30
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    systemctl daemon-reload
+    systemctl enable wings
+    echo -e "${GREEN}--> Wings binary and service configured successfully!${NC}"
+fi
+
 # Final Summary
 echo -e "\n${GREEN}${BOLD}================================================================${NC}"
-echo -e "${GREEN}${BOLD}   PTERODACTYL PANEL INSTALLED SUCCESSFULLY! (BLUE THEME)       ${NC}"
+echo -e "${GREEN}${BOLD}      TIMO X PANEL INSTALLED SUCCESSFULLY!                      ${NC}"
 echo -e "${GREEN}${BOLD}================================================================${NC}"
-echo -e " Panel URL:      ${CYAN}${PROTOCOL}://${FQDN}${NC}"
-echo -e " Admin Username: ${YELLOW}${ADMIN_USER}${NC}"
-echo -e " Admin Email:    ${YELLOW}${ADMIN_EMAIL}${NC}"
-echo -e " Database Pass:  ${YELLOW}${DB_PASSWORD}${NC}"
-echo -e " Database Name:  ${YELLOW}panel${NC}"
+echo -e " Panel URL:        ${CYAN}${PROTOCOL}://${FQDN}${NC}"
+echo -e " Admin Username:   ${YELLOW}${ADMIN_USER}${NC}"
+echo -e " Admin Email:      ${YELLOW}${ADMIN_EMAIL}${NC}"
+echo -e " Database Pass:    ${YELLOW}${DB_PASSWORD}${NC}"
+echo -e " Database Name:    ${YELLOW}panel${NC}"
+if [ "$WINGS_ENABLED" = true ]; then
+echo -e " Wings Daemon:     ${GREEN}Installed (/usr/local/bin/wings)${NC}"
+echo -e " Docker Status:    ${GREEN}Active & Running${NC}"
+echo -e "\n${CYAN}${BOLD}==> Next Steps to Connect Wings (Node):${NC}"
+echo -e " 1. Log in to your panel at: ${CYAN}${PROTOCOL}://${FQDN}${NC}"
+echo -e " 2. Go to Admin -> Locations -> Click 'Create New' (e.g. Code: local)."
+echo -e " 3. Go to Admin -> Nodes -> Click 'Create New'."
+echo -e "    - Set FQDN: ${YELLOW}${FQDN}${NC}"
+echo -e "    - Memory & Disk: Set according to your server specs."
+echo -e " 4. Open the created Node -> Click the 'Configuration' tab."
+echo -e " 5. Copy the auto-configure command, run it in terminal, then run:"
+echo -e "    ${YELLOW}systemctl restart wings${NC}"
+fi
 echo -e "${GREEN}================================================================${NC}\n"
