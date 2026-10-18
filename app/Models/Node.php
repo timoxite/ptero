@@ -188,9 +188,13 @@ class Node extends Model implements Identifiable
      */
     public function getDecryptedKey(): string
     {
-        return (string) Container::getInstance()->make(Encrypter::class)->decrypt(
-            $this->daemon_token
-        );
+        try {
+            return (string) Container::getInstance()->make(Encrypter::class)->decrypt(
+                $this->daemon_token
+            );
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     public function isUnderMaintenance(): bool

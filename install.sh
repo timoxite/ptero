@@ -274,7 +274,9 @@ mkdir -p public/assets
 export COMPOSER_ALLOW_SUPERUSER=1
 composer install --no-dev --optimize-autoloader --no-interaction
 
-php artisan key:generate --force --no-interaction
+if ! grep -q "^APP_KEY=base64:" .env 2>/dev/null; then
+    php artisan key:generate --force --no-interaction
+fi
 
 # Build the custom theme
 yarn install --production=false
