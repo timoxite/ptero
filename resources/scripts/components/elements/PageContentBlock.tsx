@@ -3,6 +3,7 @@ import ContentContainer from '@/components/elements/ContentContainer';
 import { CSSTransition } from 'react-transition-group';
 import tw from 'twin.macro';
 import FlashMessageRender from '@/components/FlashMessageRender';
+import { useStoreState } from 'easy-peasy';
 
 export interface PageContentBlockProps {
     title?: string;
@@ -11,11 +12,14 @@ export interface PageContentBlockProps {
 }
 
 const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey, className, children }) => {
+    const siteName = useStoreState((state: any) => state.settings?.data?.name);
+    const name = !siteName || siteName.toLowerCase() === 'pterodactyl' ? 'Timo X Panel' : siteName;
+
     useEffect(() => {
         if (title) {
-            document.title = title;
+            document.title = `${name} - ${title}`;
         }
-    }, [title]);
+    }, [title, name]);
 
     return (
         <CSSTransition timeout={150} classNames={'fade'} appear in>

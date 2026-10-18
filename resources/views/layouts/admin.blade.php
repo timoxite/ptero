@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>{{ config('app.name', 'Pterodactyl') }} - @yield('title')</title>
+        <title>{{ config('app.name', 'Timo X Panel') }} - @yield('title')</title>
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <meta name="_token" content="{{ csrf_token() }}">
 
@@ -40,8 +40,8 @@
         <div class="wrapper">
             <header class="main-header">
                 <a href="{{ route('index') }}" class="logo">
-                    <span class="logo-mini"><b>P</b></span>
-                    <span class="logo-lg"><i class="fa fa-cubes" style="color: #38bdf8; margin-right: 6px;"></i> <b>{{ config('app.name', 'Pterodactyl') }}</b></span>
+                    <span class="logo-mini"><b>TXP</b></span>
+                    <span class="logo-lg"><i class="fa fa-cubes" style="color: #38bdf8; margin-right: 6px;"></i> <b>{{ config('app.name', 'Timo X Panel') }}</b></span>
                 </a>
                 <nav class="navbar navbar-static-top">
                     <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">

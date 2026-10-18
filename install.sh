@@ -197,6 +197,7 @@ if [ ! -f .env ]; then
         cp .env.example .env
     else
         cat << 'EOF' > .env
+APP_NAME="Timo X Panel"
 APP_ENV=production
 APP_DEBUG=false
 APP_KEY=

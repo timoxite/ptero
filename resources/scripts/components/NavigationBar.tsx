@@ -49,7 +49,8 @@ const RightNavigation = styled.div`
 `;
 
 export default () => {
-    const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
+    const name = useStoreState((state: ApplicationStore) => state.settings.data?.name);
+    const displayName = !name || name.toLowerCase() === 'pterodactyl' ? 'Timo X Panel' : name;
     const user = useStoreState((state: ApplicationStore) => state.user.data);
     const rootAdmin = user?.rootAdmin ?? false;
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -79,7 +80,7 @@ export default () => {
                         </div>
                         <div className={'flex items-center'}>
                             <span className={'text-xl font-header font-bold text-neutral-100 tracking-wide group-hover:text-cyan-300 transition-colors'}>
-                                {name}
+                                {displayName}
                             </span>
                             <span
                                 className={'ml-2.5 hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase text-cyan-300'}
