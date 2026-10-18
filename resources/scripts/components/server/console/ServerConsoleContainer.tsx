@@ -137,14 +137,14 @@ const ServerConsoleContainer = () => {
             </div>
 
             {/* Main Console & Stats Bento Layout */}
-            <div className={'grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5'}>
+            <div className={'grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5 items-stretch'}>
                 <div className={'lg:col-span-3 flex flex-col'}>
                     <Spinner.Suspense>
                         <Console />
                     </Spinner.Suspense>
                 </div>
-                <div className={'lg:col-span-1'}>
-                    <ServerDetailsBlock />
+                <div className={'lg:col-span-1 flex flex-col h-full'}>
+                    <ServerDetailsBlock className={'h-full'} />
                 </div>
             </div>
 

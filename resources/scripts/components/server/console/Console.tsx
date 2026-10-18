@@ -265,7 +265,7 @@ export default () => {
     const terminalContainer = (
         <div
             className={classNames(
-                'flex flex-col w-full transition-all duration-300',
+                'flex flex-col w-full h-full transition-all duration-300',
                 isFullscreen
                     ? 'fixed inset-4 z-50 p-4 rounded-2xl bg-[#070c18]/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_0_80px_rgba(0,0,0,0.9)]'
                     : 'relative rounded-2xl overflow-hidden'

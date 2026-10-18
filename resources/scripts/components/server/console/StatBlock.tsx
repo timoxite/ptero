@@ -29,7 +29,7 @@ export default ({ title, copyOnClick, icon, color, className, children, progress
     const blockContent = (
         <div
             className={classNames(
-                'group relative flex flex-col justify-between rounded-xl p-2.5 px-3.5 transition-all duration-300 hover:border-cyan-400/40',
+                'group relative flex flex-col justify-between rounded-xl p-3 px-3.5 transition-all duration-300 hover:border-cyan-400/40',
                 copyOnClick ? 'cursor-pointer' : '',
                 className
             )}
@@ -41,7 +41,7 @@ export default ({ title, copyOnClick, icon, color, className, children, progress
             }}
             onClick={handleCopy}
         >
-            <div className={'flex items-center justify-between w-full mb-1'}>
+            <div className={'flex items-center justify-between w-full'}>
                 <div className={'flex items-center gap-2 overflow-hidden'}>
                     <div
                         className={'w-6 h-6 rounded-lg flex items-center justify-center text-white flex-shrink-0 transition-transform duration-300 group-hover:scale-105'}
@@ -71,12 +71,12 @@ export default ({ title, copyOnClick, icon, color, className, children, progress
                 )}
             </div>
 
-            <div className={'w-full font-bold text-sm sm:text-base text-white tracking-tight truncate my-0.5'}>
+            <div className={'w-full font-bold text-sm sm:text-base text-white tracking-tight truncate my-1'}>
                 {children}
             </div>
 
             {typeof progress === 'number' && (
-                <div className={'w-full bg-slate-800/80 rounded-full h-1 mt-1.5 overflow-hidden border border-slate-700/40'}>
+                <div className={'w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden border border-slate-700/40'}>
                     <div
                         className={'h-full rounded-full transition-all duration-500'}
                         style={{

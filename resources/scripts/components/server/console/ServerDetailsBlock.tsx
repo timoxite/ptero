@@ -90,20 +90,22 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
     });
 
     return (
-        <div className={classNames('flex flex-col gap-2', className)}>
+        <div className={classNames('flex flex-col justify-between h-full gap-2.5', className)}>
             <StatBlock
                 icon={faWifi}
                 title={'Address'}
                 copyOnClick={allocation}
                 gradient={'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)'}
+                className={'flex-1'}
             >
-                <span className={'font-mono text-xs tracking-wide text-cyan-200'}>{allocation}</span>
+                <span className={'font-mono text-xs sm:text-sm tracking-wide text-cyan-200'}>{allocation}</span>
             </StatBlock>
 
             <StatBlock
                 icon={faClock}
                 title={'Uptime'}
                 gradient={'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'}
+                className={'flex-1'}
             >
                 {status === null || status === 'offline' ? (
                     <span className={'text-slate-400 font-medium text-sm'}>Offline</span>
@@ -121,6 +123,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                 title={'CPU Load'}
                 progress={cpuPercent}
                 gradient={'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'}
+                className={'flex-1'}
             >
                 {status === 'offline' ? (
                     <span className={'text-slate-400 font-medium text-sm'}>Offline</span>
@@ -134,6 +137,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                 title={'Memory'}
                 progress={memoryPercent}
                 gradient={'linear-gradient(135deg, #10b981 0%, #059669 100%)'}
+                className={'flex-1'}
             >
                 {status === 'offline' ? (
                     <span className={'text-slate-400 font-medium text-sm'}>Offline</span>
@@ -147,15 +151,17 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                 title={'Disk Storage'}
                 progress={diskPercent}
                 gradient={'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}
+                className={'flex-1'}
             >
                 <Limit limit={textLimits.disk}>{bytesToString(stats.disk)}</Limit>
             </StatBlock>
 
-            <div className={'grid grid-cols-2 gap-2'}>
+            <div className={'grid grid-cols-2 gap-2 flex-1'}>
                 <StatBlock
                     icon={faCloudDownloadAlt}
                     title={'Inbound'}
                     gradient={'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)'}
+                    className={'h-full'}
                 >
                     {status === 'offline' ? (
                         <span className={'text-slate-400 font-medium text-xs'}>Offline</span>
@@ -168,6 +174,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                     icon={faCloudUploadAlt}
                     title={'Outbound'}
                     gradient={'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)'}
+                    className={'h-full'}
                 >
                     {status === 'offline' ? (
                         <span className={'text-slate-400 font-medium text-xs'}>Offline</span>
