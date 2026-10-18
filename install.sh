@@ -7,6 +7,11 @@
 
 set -e
 
+# Ensure current directory exists to prevent getcwd/uv_cwd ENOENT errors
+if ! pwd &>/dev/null; then
+    cd /root 2>/dev/null || cd /tmp 2>/dev/null || cd /
+fi
+
 # Colors for terminal output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -118,9 +123,13 @@ else
 fi
 
 # Determine source directory of files
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR=""
+if [[ -n "${BASH_SOURCE[0]}" && -f "${BASH_SOURCE[0]}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd 2>/dev/null || echo "")"
+fi
+
 IS_LOCAL_SOURCE=false
-if [[ -f "$SCRIPT_DIR/artisan" && -f "$SCRIPT_DIR/composer.json" ]]; then
+if [[ -n "$SCRIPT_DIR" && -f "$SCRIPT_DIR/artisan" && -f "$SCRIPT_DIR/composer.json" ]]; then
     IS_LOCAL_SOURCE=true
 fi
 
