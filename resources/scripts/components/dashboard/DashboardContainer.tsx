@@ -13,6 +13,8 @@ import useSWR from 'swr';
 import { PaginatedResult } from '@/api/http';
 import Pagination from '@/components/elements/Pagination';
 import { useLocation } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faServer } from '@fortawesome/free-solid-svg-icons';
 
 export default () => {
     const { search } = useLocation();
@@ -21,7 +23,8 @@ export default () => {
     const [page, setPage] = useState(!isNaN(defaultPage) && defaultPage > 0 ? defaultPage : 1);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const uuid = useStoreState((state) => state.user.data!.uuid);
-    const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const user = useStoreState((state) => state.user.data);
+    const rootAdmin = user?.rootAdmin ?? false;
     const [showOnlyAdmin, setShowOnlyAdmin] = usePersistedState(`${uuid}:show_all_servers`, false);
 
     const { data: servers, error } = useSWR<PaginatedResult<Server>>(
@@ -52,35 +55,96 @@ export default () => {
         if (!error) clearFlashes('dashboard');
     }, [error]);
 
+    const totalServers = servers?.pagination.total ?? 0;
+
     return (
         <PageContentBlock title={'Dashboard'} showFlashKey={'dashboard'}>
-            {rootAdmin && (
-                <div css={tw`mb-2 flex justify-end items-center`}>
-                    <p css={tw`uppercase text-xs text-neutral-400 mr-2`}>
-                        {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
+            {/* Bento Dashboard Header */}
+            <div
+                className={'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl mb-6'}
+                style={{
+                    background: 'linear-gradient(135deg, rgba(13, 22, 44, 0.75) 0%, rgba(10, 18, 38, 0.85) 100%)',
+                    border: '1px solid rgba(56, 189, 248, 0.18)',
+                    boxShadow: '0 8px 25px -5px rgba(0, 0, 0, 0.5)',
+                }}
+            >
+                <div>
+                    <div className={'flex items-center gap-3'}>
+                        <h2 className={'text-xl sm:text-2xl font-bold font-header text-white tracking-tight'}>
+                            Infrastructure &amp; Servers
+                        </h2>
+                        {servers && (
+                            <span
+                                className={'px-2.5 py-0.5 rounded-full text-xs font-semibold text-cyan-300'}
+                                style={{
+                                    background: 'rgba(14, 165, 233, 0.15)',
+                                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                                }}
+                            >
+                                {totalServers} {totalServers === 1 ? 'instance' : 'instances'}
+                            </span>
+                        )}
+                    </div>
+                    <p className={'text-xs sm:text-sm text-neutral-400 mt-1'}>
+                        Real-time telemetry, resources, and node monitoring for your game servers and applications
                     </p>
-                    <Switch
-                        name={'show_all_servers'}
-                        defaultChecked={showOnlyAdmin}
-                        onChange={() => setShowOnlyAdmin((s) => !s)}
-                    />
                 </div>
-            )}
+
+                {rootAdmin && (
+                    <div
+                        className={'flex items-center gap-2.5 self-start sm:self-auto px-3.5 py-1.5 rounded-xl'}
+                        style={{
+                            background: 'rgba(15, 23, 42, 0.8)',
+                            border: '1px solid rgba(56, 189, 248, 0.2)',
+                        }}
+                    >
+                        <span className={'text-xs font-medium text-neutral-300'}>
+                            {showOnlyAdmin ? "Others' Servers" : 'My Servers'}
+                        </span>
+                        <Switch
+                            name={'show_all_servers'}
+                            defaultChecked={showOnlyAdmin}
+                            onChange={() => setShowOnlyAdmin((s) => !s)}
+                        />
+                    </div>
+                )}
+            </div>
+
             {!servers ? (
                 <Spinner centered size={'large'} />
             ) : (
                 <Pagination data={servers} onPageSelect={setPage}>
                     {({ items }) =>
                         items.length > 0 ? (
-                            items.map((server, index) => (
-                                <ServerRow key={server.uuid} server={server} css={index > 0 ? tw`mt-2` : undefined} />
-                            ))
+                            <div className={'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'}>
+                                {items.map((server) => (
+                                    <ServerRow key={server.uuid} server={server} />
+                                ))}
+                            </div>
                         ) : (
-                            <p css={tw`text-center text-sm text-neutral-400`}>
-                                {showOnlyAdmin
-                                    ? 'There are no other servers to display.'
-                                    : 'There are no servers associated with your account.'}
-                            </p>
+                            <div
+                                className={'flex flex-col items-center justify-center p-12 text-center rounded-2xl mt-4'}
+                                style={{
+                                    background: 'rgba(13, 22, 44, 0.6)',
+                                    border: '1px dashed rgba(56, 189, 248, 0.25)',
+                                }}
+                            >
+                                <div
+                                    className={'w-14 h-14 rounded-2xl flex items-center justify-center text-cyan-400 text-2xl mb-4'}
+                                    style={{
+                                        background: 'rgba(14, 165, 233, 0.12)',
+                                        border: '1px solid rgba(56, 189, 248, 0.25)',
+                                    }}
+                                >
+                                    <FontAwesomeIcon icon={faServer} />
+                                </div>
+                                <h4 className={'text-lg font-bold text-white mb-1'}>No Servers Found</h4>
+                                <p className={'text-sm text-neutral-400 max-w-sm'}>
+                                    {showOnlyAdmin
+                                        ? 'There are no other servers available on the system to display.'
+                                        : 'There are currently no active servers associated with your account.'}
+                                </p>
+                            </div>
                         )
                     }
                 </Pagination>

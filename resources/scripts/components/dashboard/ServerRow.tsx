@@ -1,50 +1,50 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEthernet, faHdd, faMemory, faMicrochip, faServer } from '@fortawesome/free-solid-svg-icons';
+import { faEthernet, faHdd, faMemory, faMicrochip, faServer, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import { Server } from '@/api/server/getServer';
 import getServerResourceUsage, { ServerPowerState, ServerStats } from '@/api/server/getServerResourceUsage';
 import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
 import tw from 'twin.macro';
-import GreyRowBox from '@/components/elements/GreyRowBox';
 import Spinner from '@/components/elements/Spinner';
 import styled from 'styled-components/macro';
-import isEqual from 'react-fast-compare';
 
-// Determines if the current value is in an alarm threshold so we can show it in red rather
-// than the more faded default style.
+// Determines if the current value is in an alarm threshold (>= 90%)
 const isAlarmState = (current: number, limit: number): boolean => limit > 0 && current / (limit * 1024 * 1024) >= 0.9;
 
-const Icon = memo(
-    styled(FontAwesomeIcon)<{ $alarm: boolean }>`
-        ${(props) => (props.$alarm ? tw`text-red-400` : tw`text-neutral-500`)};
-    `,
-    isEqual
-);
+const CardWrapper = styled(Link)<{ $status?: ServerPowerState | string }>`
+    ${tw`relative flex flex-col justify-between rounded-2xl p-5 no-underline transition-all duration-300 overflow-hidden group`};
+    background: linear-gradient(145deg, rgba(16, 27, 54, 0.9) 0%, rgba(10, 18, 38, 0.96) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(56, 189, 248, 0.16);
+    box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.5), 0 0 15px rgba(14, 165, 233, 0.05);
 
-const IconDescription = styled.p<{ $alarm: boolean }>`
-    ${tw`text-sm ml-2`};
-    ${(props) => (props.$alarm ? tw`text-white` : tw`text-neutral-400`)};
+    &:hover {
+        transform: translateY(-4px);
+        border-color: rgba(56, 189, 248, 0.45);
+        box-shadow: 0 18px 35px -8px rgba(0, 0, 0, 0.65), 0 0 25px rgba(14, 165, 233, 0.22);
+    }
 `;
 
-const StatusIndicatorBox = styled(GreyRowBox)<{ $status: ServerPowerState | undefined }>`
-    ${tw`grid grid-cols-12 gap-4 relative`};
-
-    & .status-bar {
-        ${tw`w-2 bg-red-500 absolute right-0 z-20 rounded-full m-1 opacity-50 transition-all duration-150`};
-        height: calc(100% - 0.5rem);
-
-        ${({ $status }) =>
-            !$status || $status === 'offline'
-                ? tw`bg-red-500`
-                : $status === 'running'
-                ? tw`bg-green-500`
-                : tw`bg-yellow-500`};
-    }
-
-    &:hover .status-bar {
-        ${tw`opacity-75`};
-    }
+const GlowAccent = styled.div<{ $status?: ServerPowerState | string }>`
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: ${({ $status }) => {
+        if ($status === 'running') return 'linear-gradient(90deg, #10b981, #38bdf8)';
+        if ($status === 'starting') return 'linear-gradient(90deg, #f59e0b, #eab308)';
+        if ($status === 'stopping') return 'linear-gradient(90deg, #ef4444, #f59e0b)';
+        return 'linear-gradient(90deg, rgba(100, 116, 139, 0.4), rgba(71, 85, 105, 0.4))';
+    }};
+    box-shadow: ${({ $status }) =>
+        $status === 'running'
+            ? '0 0 12px rgba(16, 185, 129, 0.6)'
+            : $status === 'starting'
+            ? '0 0 12px rgba(245, 158, 11, 0.6)'
+            : 'none'};
 `;
 
 type Timer = ReturnType<typeof setInterval>;
@@ -64,8 +64,6 @@ export default ({ server, className }: { server: Server; className?: string }) =
     }, [stats?.isSuspended, server.status]);
 
     useEffect(() => {
-        // Don't waste a HTTP request if there is nothing important to show to the user because
-        // the server is suspended.
         if (isSuspended || server.isNodeUnderMaintenance) return;
 
         getStats().then(() => {
@@ -84,99 +82,231 @@ export default ({ server, className }: { server: Server; className?: string }) =
         alarms.disk = server.limits.disk === 0 ? false : isAlarmState(stats.diskUsageInBytes, server.limits.disk);
     }
 
-    const diskLimit = server.limits.disk !== 0 ? bytesToString(mbToBytes(server.limits.disk)) : 'Unlimited';
-    const memoryLimit = server.limits.memory !== 0 ? bytesToString(mbToBytes(server.limits.memory)) : 'Unlimited';
-    const cpuLimit = server.limits.cpu !== 0 ? server.limits.cpu + ' %' : 'Unlimited';
+    const diskLimitBytes = mbToBytes(server.limits.disk);
+    const diskLimitStr = server.limits.disk !== 0 ? bytesToString(diskLimitBytes) : 'Unlimited';
+    const diskPercent = stats && diskLimitBytes > 0
+        ? Math.min(100, Math.max(0, (stats.diskUsageInBytes / diskLimitBytes) * 100))
+        : 0;
+
+    const memoryLimitBytes = mbToBytes(server.limits.memory);
+    const memoryLimitStr = server.limits.memory !== 0 ? bytesToString(memoryLimitBytes) : 'Unlimited';
+    const memoryPercent = stats && memoryLimitBytes > 0
+        ? Math.min(100, Math.max(0, (stats.memoryUsageInBytes / memoryLimitBytes) * 100))
+        : 0;
+
+    const cpuLimitStr = server.limits.cpu !== 0 ? `${server.limits.cpu}%` : 'Unlimited';
+    const cpuPercent = stats
+        ? server.limits.cpu > 0
+            ? Math.min(100, Math.max(0, (stats.cpuUsagePercent / server.limits.cpu) * 100))
+            : Math.min(100, stats.cpuUsagePercent)
+        : 0;
+
+    const defaultAllocation = server.allocations
+        .filter((alloc) => alloc.isDefault)
+        .map((allocation) => `${allocation.alias || ip(allocation.ip)}:${allocation.port}`)[0] || 'No IP Assigned';
 
     return (
-        <StatusIndicatorBox as={Link} to={`/server/${server.id}`} className={className} $status={stats?.status}>
-            <div css={tw`flex items-center col-span-12 sm:col-span-5 lg:col-span-6`}>
-                <div className={'icon mr-4'}>
-                    <FontAwesomeIcon icon={faServer} />
-                </div>
-                <div>
-                    <p css={tw`text-lg break-words`}>{server.name}</p>
-                    {!!server.description && (
-                        <p css={tw`text-sm text-neutral-300 break-words line-clamp-2`}>{server.description}</p>
-                    )}
-                </div>
-            </div>
-            <div css={tw`flex-1 ml-4 lg:block lg:col-span-2 hidden`}>
-                <div css={tw`flex justify-center`}>
-                    <FontAwesomeIcon icon={faEthernet} css={tw`text-neutral-500`} />
-                    <p css={tw`text-sm text-neutral-400 ml-2`}>
-                        {server.allocations
-                            .filter((alloc) => alloc.isDefault)
-                            .map((allocation) => (
-                                <React.Fragment key={allocation.ip + allocation.port.toString()}>
-                                    {allocation.alias || ip(allocation.ip)}:{allocation.port}
-                                </React.Fragment>
-                            ))}
-                    </p>
-                </div>
-            </div>
-            <div css={tw`hidden col-span-7 lg:col-span-4 sm:flex items-baseline justify-center`}>
-                {!stats || isSuspended || server.isNodeUnderMaintenance ? (
-                    isSuspended ? (
-                        <div css={tw`flex-1 text-center`}>
-                            <span css={tw`bg-red-500 rounded px-2 py-1 text-red-100 text-xs`}>
-                                {server.status === 'suspended' ? 'Suspended' : 'Connection Error'}
+        <CardWrapper to={`/server/${server.id}`} className={className} $status={stats?.status}>
+            <GlowAccent $status={stats?.status} />
+            
+            {/* Top row: Icon & Status */}
+            <div>
+                <div className={'flex items-center justify-between mb-3'}>
+                    <div
+                        className={'w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-transform duration-300 group-hover:scale-105'}
+                        style={{
+                            background: stats?.status === 'running' ? 'rgba(14, 165, 233, 0.15)' : 'rgba(30, 41, 59, 0.8)',
+                            border: stats?.status === 'running' ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid rgba(71, 85, 105, 0.4)',
+                            color: stats?.status === 'running' ? '#38bdf8' : '#94a3b8',
+                            boxShadow: stats?.status === 'running' ? '0 0 12px rgba(14, 165, 233, 0.25)' : 'none',
+                        }}
+                    >
+                        <FontAwesomeIcon icon={faServer} />
+                    </div>
+
+                    <div>
+                        {isSuspended ? (
+                            <span
+                                className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-red-300'}
+                                style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)' }}
+                            >
+                                <span className={'w-1.5 h-1.5 rounded-full bg-red-400'} />
+                                {server.status === 'suspended' ? 'SUSPENDED' : 'ERROR'}
                             </span>
-                        </div>
-                    ) : server.isNodeUnderMaintenance ? (
-                        <div css={tw`flex-1 text-center`}>
-                            <span css={tw`bg-yellow-500 rounded px-2 py-1 text-yellow-100 text-xs`}>
-                                Under Maintenance
+                        ) : server.isNodeUnderMaintenance ? (
+                            <span
+                                className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-amber-300'}
+                                style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.4)' }}
+                            >
+                                <span className={'w-1.5 h-1.5 rounded-full bg-amber-400'} />
+                                MAINTENANCE
                             </span>
-                        </div>
-                    ) : server.isTransferring || server.status ? (
-                        <div css={tw`flex-1 text-center`}>
-                            <span css={tw`bg-neutral-500 rounded px-2 py-1 text-neutral-100 text-xs`}>
-                                {server.isTransferring
-                                    ? 'Transferring'
-                                    : server.status === 'installing'
-                                    ? 'Installing'
-                                    : server.status === 'restoring_backup'
-                                    ? 'Restoring Backup'
-                                    : 'Unavailable'}
+                        ) : server.isTransferring || server.status ? (
+                            <span
+                                className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-neutral-300'}
+                                style={{ background: 'rgba(100, 116, 139, 0.2)', border: '1px solid rgba(100, 116, 139, 0.4)' }}
+                            >
+                                {server.isTransferring ? 'TRANSFERRING' : server.status?.toUpperCase() || 'BUSY'}
                             </span>
-                        </div>
-                    ) : (
-                        <Spinner size={'small'} />
-                    )
-                ) : (
-                    <React.Fragment>
-                        <div css={tw`flex-1 ml-4 sm:block hidden`}>
-                            <div css={tw`flex justify-center`}>
-                                <Icon icon={faMicrochip} $alarm={alarms.cpu} />
-                                <IconDescription $alarm={alarms.cpu}>
-                                    {stats.cpuUsagePercent.toFixed(2)} %
-                                </IconDescription>
-                            </div>
-                            <p css={tw`text-xs text-neutral-600 text-center mt-1`}>of {cpuLimit}</p>
-                        </div>
-                        <div css={tw`flex-1 ml-4 sm:block hidden`}>
-                            <div css={tw`flex justify-center`}>
-                                <Icon icon={faMemory} $alarm={alarms.memory} />
-                                <IconDescription $alarm={alarms.memory}>
-                                    {bytesToString(stats.memoryUsageInBytes)}
-                                </IconDescription>
-                            </div>
-                            <p css={tw`text-xs text-neutral-600 text-center mt-1`}>of {memoryLimit}</p>
-                        </div>
-                        <div css={tw`flex-1 ml-4 sm:block hidden`}>
-                            <div css={tw`flex justify-center`}>
-                                <Icon icon={faHdd} $alarm={alarms.disk} />
-                                <IconDescription $alarm={alarms.disk}>
-                                    {bytesToString(stats.diskUsageInBytes)}
-                                </IconDescription>
-                            </div>
-                            <p css={tw`text-xs text-neutral-600 text-center mt-1`}>of {diskLimit}</p>
-                        </div>
-                    </React.Fragment>
+                        ) : !stats ? (
+                            <span className={'flex items-center text-xs text-neutral-400'}>
+                                <Spinner size={'small'} />
+                            </span>
+                        ) : stats.status === 'running' ? (
+                            <span
+                                className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-emerald-300'}
+                                style={{
+                                    background: 'rgba(16, 185, 129, 0.15)',
+                                    border: '1px solid rgba(16, 185, 129, 0.4)',
+                                    boxShadow: '0 0 10px rgba(16, 185, 129, 0.25)',
+                                }}
+                            >
+                                <span className={'w-2 h-2 rounded-full bg-emerald-400 animate-pulse'} />
+                                ONLINE
+                            </span>
+                        ) : stats.status === 'starting' ? (
+                            <span
+                                className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-amber-300'}
+                                style={{
+                                    background: 'rgba(245, 158, 11, 0.15)',
+                                    border: '1px solid rgba(245, 158, 11, 0.4)',
+                                }}
+                            >
+                                <span className={'w-2 h-2 rounded-full bg-amber-400 animate-ping'} />
+                                STARTING
+                            </span>
+                        ) : stats.status === 'stopping' ? (
+                            <span
+                                className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-red-300'}
+                                style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)' }}
+                            >
+                                <span className={'w-2 h-2 rounded-full bg-red-400'} />
+                                STOPPING
+                            </span>
+                        ) : (
+                            <span
+                                className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-neutral-400'}
+                                style={{ background: 'rgba(51, 65, 85, 0.35)', border: '1px solid rgba(71, 85, 105, 0.4)' }}
+                            >
+                                <span className={'w-1.5 h-1.5 rounded-full bg-neutral-500'} />
+                                OFFLINE
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Server Title & Info */}
+                <h3 className={'text-lg font-bold text-neutral-100 group-hover:text-cyan-300 transition-colors truncate mb-1'}>
+                    {server.name}
+                </h3>
+                {!!server.description && (
+                    <p className={'text-xs text-neutral-400 line-clamp-1 mb-2'}>{server.description}</p>
                 )}
+
+                {/* Connection Tag */}
+                <div
+                    className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono text-neutral-300'}
+                    style={{
+                        background: 'rgba(15, 23, 42, 0.7)',
+                        border: '1px solid rgba(56, 189, 248, 0.15)',
+                    }}
+                >
+                    <FontAwesomeIcon icon={faEthernet} className={'text-cyan-400 text-xs'} />
+                    <span>{defaultAllocation}</span>
+                </div>
             </div>
-            <div className={'status-bar'} />
-        </StatusIndicatorBox>
+
+            {/* Middle: Gauges */}
+            <div className={'space-y-2.5 my-4 pt-3 border-t border-neutral-800'}>
+                {/* CPU */}
+                <div>
+                    <div className={'flex justify-between items-center text-xs mb-1'}>
+                        <span className={'flex items-center gap-1.5 text-neutral-400'}>
+                            <FontAwesomeIcon icon={faMicrochip} className={alarms.cpu ? 'text-red-400' : 'text-cyan-400'} />
+                            <span>CPU</span>
+                        </span>
+                        <span className={'font-mono text-xs text-neutral-200'}>
+                            {stats ? `${stats.cpuUsagePercent.toFixed(1)}%` : '0%'}
+                            <span className={'text-neutral-500 ml-1 font-sans'}>/ {cpuLimitStr}</span>
+                        </span>
+                    </div>
+                    <div className={'h-1.5 w-full rounded-full bg-neutral-800 overflow-hidden'}>
+                        <div
+                            className={'h-full rounded-full transition-all duration-500'}
+                            style={{
+                                width: `${cpuPercent}%`,
+                                background: alarms.cpu
+                                    ? 'linear-gradient(90deg, #f87171, #ef4444)'
+                                    : 'linear-gradient(90deg, #38bdf8, #2563eb)',
+                                boxShadow: alarms.cpu ? '0 0 8px rgba(239, 68, 68, 0.6)' : '0 0 8px rgba(14, 165, 233, 0.4)',
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* Memory */}
+                <div>
+                    <div className={'flex justify-between items-center text-xs mb-1'}>
+                        <span className={'flex items-center gap-1.5 text-neutral-400'}>
+                            <FontAwesomeIcon icon={faMemory} className={alarms.memory ? 'text-red-400' : 'text-indigo-400'} />
+                            <span>RAM</span>
+                        </span>
+                        <span className={'font-mono text-xs text-neutral-200'}>
+                            {stats ? bytesToString(stats.memoryUsageInBytes) : '0 MB'}
+                            <span className={'text-neutral-500 ml-1 font-sans'}>/ {memoryLimitStr}</span>
+                        </span>
+                    </div>
+                    <div className={'h-1.5 w-full rounded-full bg-neutral-800 overflow-hidden'}>
+                        <div
+                            className={'h-full rounded-full transition-all duration-500'}
+                            style={{
+                                width: `${memoryPercent}%`,
+                                background: alarms.memory
+                                    ? 'linear-gradient(90deg, #f87171, #ef4444)'
+                                    : 'linear-gradient(90deg, #818cf8, #6366f1)',
+                                boxShadow: alarms.memory ? '0 0 8px rgba(239, 68, 68, 0.6)' : '0 0 8px rgba(99, 102, 241, 0.4)',
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* Disk */}
+                <div>
+                    <div className={'flex justify-between items-center text-xs mb-1'}>
+                        <span className={'flex items-center gap-1.5 text-neutral-400'}>
+                            <FontAwesomeIcon icon={faHdd} className={alarms.disk ? 'text-red-400' : 'text-emerald-400'} />
+                            <span>Disk</span>
+                        </span>
+                        <span className={'font-mono text-xs text-neutral-200'}>
+                            {stats ? bytesToString(stats.diskUsageInBytes) : '0 MB'}
+                            <span className={'text-neutral-500 ml-1 font-sans'}>/ {diskLimitStr}</span>
+                        </span>
+                    </div>
+                    <div className={'h-1.5 w-full rounded-full bg-neutral-800 overflow-hidden'}>
+                        <div
+                            className={'h-full rounded-full transition-all duration-500'}
+                            style={{
+                                width: `${diskPercent}%`,
+                                background: alarms.disk
+                                    ? 'linear-gradient(90deg, #f87171, #ef4444)'
+                                    : 'linear-gradient(90deg, #34d399, #059669)',
+                                boxShadow: alarms.disk ? '0 0 8px rgba(239, 68, 68, 0.6)' : '0 0 8px rgba(16, 185, 129, 0.4)',
+                            }}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Footer: Server identifier & CTA */}
+            <div className={'flex items-center justify-between pt-2.5 border-t border-neutral-800 text-xs'}>
+                <span className={'text-neutral-500 font-mono text-[11px]'}>
+                    ID: {server.id.slice(0, 8)}
+                </span>
+                <span className={'flex items-center gap-1.5 text-cyan-400 font-medium group-hover:text-cyan-300 transition-colors'}>
+                    <span>Manage</span>
+                    <FontAwesomeIcon icon={faExternalLinkAlt} className={'text-[10px] group-hover:translate-x-0.5 transition-transform'} />
+                </span>
+            </div>
+        </CardWrapper>
     );
 };

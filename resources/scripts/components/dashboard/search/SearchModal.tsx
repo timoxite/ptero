@@ -22,10 +22,15 @@ interface Values {
 }
 
 const ServerResult = styled(Link)`
-    ${tw`flex items-center bg-neutral-900 p-4 rounded border-l-4 border-neutral-900 no-underline transition-all duration-150`};
+    ${tw`flex items-center p-3.5 rounded-xl no-underline transition-all duration-200`};
+    background: rgba(13, 22, 44, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.18);
 
     &:hover {
-        ${tw`shadow border-cyan-500`};
+        background: rgba(14, 165, 233, 0.15);
+        border-color: rgba(56, 189, 248, 0.5);
+        box-shadow: 0 0 16px rgba(14, 165, 233, 0.25);
+        transform: translateX(4px);
     }
 
     &:not(:last-of-type) {
