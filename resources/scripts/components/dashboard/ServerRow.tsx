@@ -14,7 +14,7 @@ import styled from 'styled-components/macro';
 const isAlarmState = (current: number, limit: number): boolean => limit > 0 && current / (limit * 1024 * 1024) >= 0.9;
 
 const CardWrapper = styled(Link)<{ $status?: ServerPowerState | string }>`
-    ${tw`relative flex flex-col justify-between rounded-2xl p-5 no-underline transition-all duration-300 overflow-hidden group`};
+    ${tw`relative flex flex-col justify-between rounded-2xl p-5 no-underline transition-all duration-300 overflow-hidden`};
     background: linear-gradient(145deg, rgba(16, 27, 54, 0.9) 0%, rgba(10, 18, 38, 0.96) 100%);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -116,7 +116,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
         .map((allocation) => `${allocation.alias || ip(allocation.ip)}:${allocation.port}`)[0] || 'No IP Assigned';
 
     return (
-        <CardWrapper to={`/server/${server.id}`} className={className} $status={stats?.status}>
+        <CardWrapper to={`/server/${server.id}`} className={`group ${className || ''}`} $status={stats?.status}>
             <GlowAccent $status={stats?.status} />
             
             {/* Top row: Icon & Status */}
